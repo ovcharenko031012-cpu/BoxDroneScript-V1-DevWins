@@ -1,0 +1,38 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local root = character:WaitForChild("HumanoidRootPart")
+
+local flying = false
+local flySpeed = 50
+
+local bodyVelocity = Instance.new("BodyVelocity")
+bodyVelocity.MaxForce = Vector3.new(4e5, 4e5, 4e5)
+bodyVelocity.Velocity = Vector3.zero
+
+-- Переключение полёта на клавишу E
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.E then
+		flying = not flying
+		if flying then
+			bodyVelocity.Parent = root
+			humanoid.PlatformStand = true
+		else
+			bodyVelocity.Parent = nil
+			humanoid.PlatformStand = false
+		end
+	end
+end)
+
+-- Обновление направления движения
+RunService.RenderStepped:Connect(function()
+	if flying then
+		local camera = workspace.CurrentCamera
+		bodyVelocity.Velocity = camera.CFrame.LookVector * flySpeed
+	end
+end)
